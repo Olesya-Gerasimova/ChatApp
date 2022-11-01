@@ -1,5 +1,7 @@
 # ChatApp
-# Практическая работа (https://github.com/max-arshinov/dotnet-homeworks-3)
+# Практическая работа 
+
+(https://github.com/max-arshinov/dotnet-homeworks-3)
 
 ## Шаг №1
 Запускаем практическую работу прошлого семестра в docker. 
