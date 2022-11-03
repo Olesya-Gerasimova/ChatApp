@@ -1,19 +1,28 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using ChatApp;
+using ChatApp.Contracts;
+using MassTransit;
 
-namespace ChatProject
+namespace ChatApp;
+
+public class ChatHub : Hub
 {
-    public class ChatHub : Hub
+    readonly IBus _bus;
+
+    public ChatHub(IBus bus)
     {
-        public async Task Send(string username, string content)
+        _bus = bus;
+    }
+    public async Task Send(string username, string content)
+    {
+        var message = new Message
         {
-            HistoryBase.list.Add(new History
-            {
-                Username = username,
-                Content = content
-            });
-            await Clients.All.SendAsync("message", username, content);
-        }
+            Username = username,
+            Content = content
+        };
+        HistoryBase.list.Add(message);
+        await Clients.All.SendAsync("message", username, content);
+        await _bus.Publish(message);
     }
 }

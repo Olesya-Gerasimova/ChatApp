@@ -1,4 +1,7 @@
-using ChatProject;
+using ChatApp;
+using MassTransit;
+using System.Reflection;
+using ChatApp.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +14,40 @@ builder.Services.AddSignalR()
         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
     });
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddMassTransit(x =>
+{
+    x.SetKebabCaseEndpointNameFormatter();
+
+    // By default, sagas are in-memory, but should be changed to a durable
+    // saga repository.
+    x.SetInMemorySagaRepositoryProvider();
+
+    var entryAssembly = Assembly.GetEntryAssembly();
+
+    x.AddConsumers(entryAssembly);
+    x.AddSagaStateMachines(entryAssembly);
+    x.AddSagas(entryAssembly);
+    x.AddActivities(entryAssembly);
+
+    /*x.UsingInMemory((context, cfg) =>
+    {
+        cfg.ConfigureEndpoints(context);
+    });*/
+    
+    x.UsingRabbitMq((context,cfg) =>
+    {
+        cfg.Host("localhost", "/", h => {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+
+    x.AddConsumer<MessageConsumer>();
+});
+
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 /*builder.Services.AddCors(options =>
 {
@@ -39,7 +75,7 @@ app.MapControllerRoute(
 
 app.MapFallbackToFile("index.html"); ;
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(myAllowSpecificOrigins);
 
 app.MapHub<ChatHub>("/chat");
 

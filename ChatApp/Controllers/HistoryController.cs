@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ChatApp.Contracts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Controllers
 {
@@ -14,7 +15,7 @@ namespace ChatApp.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<History> Get()
+        public IEnumerable<Message> Get()
         {
             return HistoryBase.list;
         }
